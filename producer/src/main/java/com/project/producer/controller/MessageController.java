@@ -20,7 +20,7 @@ public class MessageController {
 
     @PostMapping("/sendMessage")
     public ResponseEntity<String> sendMessage(@RequestBody MessageEvent messageEvent) {
-        mqProducer.sendMessage(messageEvent);
+        mqProducer.sendMessage();
         return ResponseEntity.ok("Message sent");
     }
 }
