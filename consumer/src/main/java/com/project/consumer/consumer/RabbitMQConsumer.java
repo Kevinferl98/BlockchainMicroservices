@@ -13,6 +13,6 @@ public class RabbitMQConsumer {
 
     @RabbitListener(queues = {"${rabbitmq.queue.name}"})
     public void consume(MessageEvent message) {
-        logger.info("Message received: {}", message);
+        logger.info("Received message: {}", message.toString());
     }
 }

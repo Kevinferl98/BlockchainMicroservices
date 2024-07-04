@@ -15,10 +15,10 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.queue.name}")
     private String queue;
 
-    @Value("$rabbitmq.exchange.name")
+    @Value("${rabbitmq.exchange.name}")
     private String exchange;
 
-    @Value("{rabbitmq.routing.key.name}")
+    @Value("${rabbitmq.routing.key.name}")
     private String routingKey;
 
     @Bean
@@ -41,6 +41,7 @@ public class RabbitMQConfig {
         return new Jackson2JsonMessageConverter();
     }
 
+    @Bean
     public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(messageConverter());
