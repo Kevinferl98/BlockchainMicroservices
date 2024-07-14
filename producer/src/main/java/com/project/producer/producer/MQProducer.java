@@ -29,6 +29,9 @@ public class MQProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(MQProducer.class);
 
+    private static final String[] CATEGORIES = {"Urgent", "Slightly urgent", "Not urgent"};
+    private static final String[] DESCRIPTIONS = {"Description1", "Description2", "Description3"};
+
     private RabbitTemplate rabbitTemplate;
     private final TaskScheduler taskScheduler;
     private ScheduledFuture<?> scheduledTask;
@@ -50,7 +53,7 @@ public class MQProducer {
     }
 
     private void scheduleNextMessage() {
-        Duration delay = Duration.ofSeconds(new Random().nextInt(11) + 5);
+        Duration delay = Duration.ofSeconds(new Random().nextInt(21) + 10);
         Trigger trigger = new Trigger() {
             @Override
             public Instant nextExecution(TriggerContext triggerContext) {
@@ -68,9 +71,14 @@ public class MQProducer {
     private MessageEvent createMessageEvent() {
         MessageEvent messageEvent = new MessageEvent();
         messageEvent.setPriority(new Random().nextInt(3) + 1);
-        messageEvent.setCategory("");
-        messageEvent.setDescription("");
+        messageEvent.setCategory(getRandomElement(CATEGORIES));
+        messageEvent.setDescription(getRandomElement(DESCRIPTIONS));
         messageEvent.setTimestamp(getTimestamp());
         return messageEvent;
+    }
+
+    private static String getRandomElement(String[] array) {
+        int index = new Random().nextInt(array.length);
+        return array[index];
     }
 }
