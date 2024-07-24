@@ -11,6 +11,7 @@ import org.web3j.protocol.core.methods.response.EthGasPrice;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
@@ -94,13 +95,40 @@ public class EthereumService {
         return Numeric.toHexString(signedMessage);
     }
 
-    private void sendSignedTransaction(String hexValue) throws IOException {
+    private void sendSignedTransaction(String hexValue) throws IOException, InterruptedException {
         EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
 
         if (ethSendTransaction.hasError()) {
             log.error("Error while sending: {}", ethSendTransaction.getError().getMessage());
         } else {
-            log.info("Transaction sent successfully, transaction hash: {}", ethSendTransaction.getTransactionHash());
+            String transactionHash = ethSendTransaction.getTransactionHash();
+            log.info("Transaction sent successfully, transaction hash: {}", transactionHash);
+            waitForReceipt(transactionHash);
         }
+    }
+
+    private void waitForReceipt(String transactionHash) throws IOException, InterruptedException {
+        long startTime = System.currentTimeMillis();
+        TransactionReceipt receipt = getTransactionReceipt(transactionHash, 10000);
+
+        if (receipt == null) {
+            log.error("Unable to receive receipt");
+        } else {
+            long endTime = System.currentTimeMillis();
+            log.info("Block written, wait time: {} ms", endTime - startTime);
+        }
+    }
+
+    private TransactionReceipt getTransactionReceipt(String transactionHash, long timeoutMills) throws IOException, InterruptedException {
+        long startTime = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - startTime < timeoutMills) {
+            TransactionReceipt receipt = web3j.ethGetTransactionReceipt(transactionHash).send().getResult();
+            if (receipt != null) {
+                return receipt;
+            }
+            Thread.sleep(1000);
+        }
+        return null;
     }
 }
