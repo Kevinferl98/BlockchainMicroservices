@@ -1,5 +1,7 @@
 package com.project.consumer.service;
 
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +18,7 @@ import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
 
@@ -24,6 +27,8 @@ public class EthereumService {
 
     private final Web3j web3j;
 
+    private final Bucket bucket;
+
     @Value("${ethereum.privatekey.value}")
     private String privateKey;
 
@@ -31,25 +36,34 @@ public class EthereumService {
 
     public EthereumService(Web3j web3j) {
         this.web3j = web3j;
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(10)
+                .refillGreedy(10, Duration.ofSeconds(1))
+                .build();
+        this.bucket = Bucket.builder().addLimit(limit).build();
     }
 
     public void sendTransaction(String hash) {
         try {
-            Credentials credentials = Credentials.create(privateKey);
+            if (bucket.tryConsume(1)) {
+                Credentials credentials = Credentials.create(privateKey);
 
-            BigInteger balance = getBalance(credentials.getAddress());
-            BigInteger gasPrice = getGasPrice();
-            BigInteger gasLimit = BigInteger.valueOf(5_000_000);
-            BigInteger transactionCost = gasPrice.multiply(gasLimit);
+                BigInteger balance = getBalance(credentials.getAddress());
+                BigInteger gasPrice = getGasPrice();
+                BigInteger gasLimit = BigInteger.valueOf(5_000_000);
+                BigInteger transactionCost = gasPrice.multiply(gasLimit);
 
-            log.info("Gas price: {}", gasPrice);
-            log.info("Balance: {}", balance);
+                log.info("Gas price: {}", gasPrice);
+                log.info("Balance: {}", balance);
 
-            if (isBalanceSufficient(balance, transactionCost)) {
-                BigInteger nonce = getNonce(credentials.getAddress());
-                RawTransaction rawTransaction = createRawTransaction(nonce, gasPrice, gasLimit, hash);
-                String signedTransaction = signTransaction(rawTransaction, credentials);
-                sendSignedTransaction(signedTransaction);
+                if (isBalanceSufficient(balance, transactionCost)) {
+                    BigInteger nonce = getNonce(credentials.getAddress());
+                    RawTransaction rawTransaction = createRawTransaction(nonce, gasPrice, gasLimit, hash);
+                    String signedTransaction = signTransaction(rawTransaction, credentials);
+                    sendSignedTransaction(signedTransaction);
+                }
+            } else {
+                log.error("Rate limit exceeded");
             }
         } catch (Exception e) {
             log.error("Error while sending transaction: {}", e.getMessage());
