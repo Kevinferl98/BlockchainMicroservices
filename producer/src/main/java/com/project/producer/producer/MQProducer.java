@@ -34,7 +34,6 @@ public class MQProducer {
 
     private RabbitTemplate rabbitTemplate;
     private final TaskScheduler taskScheduler;
-    private ScheduledFuture<?> scheduledTask;
 
     public MQProducer(RabbitTemplate rabbitTemplate, TaskScheduler taskScheduler) {
         this.rabbitTemplate = rabbitTemplate;
@@ -60,7 +59,7 @@ public class MQProducer {
                 return Instant.now().plus(delay);
             }
         };
-        scheduledTask = this.taskScheduler.schedule(this::sendMessageAndReschedule, trigger);
+        this.taskScheduler.schedule(this::sendMessageAndReschedule, trigger);
     }
 
     private void sendMessageAndReschedule() {
