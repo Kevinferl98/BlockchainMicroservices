@@ -6,6 +6,8 @@ services:
       - "5672:5672"
     networks:
       - backend
+    volumes:
+      - ./rabbitmq-init.sh:/etc/rabbitmq/docker-entrypoint-initdb.d/rabbitmq-init.sh
 
   producer:
     build:
