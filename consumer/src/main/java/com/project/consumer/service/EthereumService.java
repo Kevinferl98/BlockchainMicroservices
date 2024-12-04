@@ -37,8 +37,8 @@ public class EthereumService {
     public EthereumService(Web3j web3j) {
         this.web3j = web3j;
         Bandwidth limit = Bandwidth.builder()
-                .capacity(10)
-                .refillGreedy(10, Duration.ofSeconds(1))
+                .capacity(3)
+                .refillGreedy(3, Duration.ofSeconds(1))
                 .build();
         this.bucket = Bucket.builder().addLimit(limit).build();
     }
@@ -50,7 +50,7 @@ public class EthereumService {
 
                 BigInteger balance = getBalance(credentials.getAddress());
                 BigInteger gasPrice = getGasPrice();
-                BigInteger gasLimit = BigInteger.valueOf(5_000_000);
+                BigInteger gasLimit = BigInteger.valueOf(30_000);
                 BigInteger transactionCost = gasPrice.multiply(gasLimit);
 
                 log.info("Gas price: {}", gasPrice);
@@ -123,7 +123,7 @@ public class EthereumService {
 
     private void waitForReceipt(String transactionHash) throws IOException, InterruptedException {
         long startTime = System.currentTimeMillis();
-        TransactionReceipt receipt = getTransactionReceipt(transactionHash, 10000);
+        TransactionReceipt receipt = getTransactionReceipt(transactionHash, 60000);
 
         if (receipt == null) {
             log.error("Unable to receive receipt");

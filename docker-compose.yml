@@ -1,0 +1,37 @@
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - backend
+
+  producer:
+    build:
+      context: ./producer
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rabbitmq
+    networks:
+      - backend
+
+  consumer:
+    build:
+      context: ./consumer
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - ETHEREUM_NODE_URL=http://host.docker.internal:7545
+    ports:
+      - "8081:8081"
+    depends_on:
+      - rabbitmq
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
