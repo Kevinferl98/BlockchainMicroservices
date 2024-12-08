@@ -1,5 +1,6 @@
 package com.project.producer.producer;
 
+import com.google.gson.Gson;
 import com.project.producer.dto.MessageEvent;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class MQProducer {
 
     public void sendMessage() {
         MessageEvent messageEvent = createMessageEvent();
-        logger.info("Message sent: {}", messageEvent.toString());
+        logger.info("Message sent: {}", new Gson().toJson(messageEvent));
         rabbitTemplate.convertAndSend(exchange, routingKey, messageEvent);
     }
 

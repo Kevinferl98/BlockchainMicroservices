@@ -1,5 +1,6 @@
 package com.project.consumer.consumer;
 
+import com.google.gson.Gson;
 import com.project.consumer.dto.MessageEvent;
 import com.project.consumer.processor.MessageProcessor;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ public class RabbitMQConsumer {
 
     @RabbitListener(queues = {"${rabbitmq.queue.name}"})
     public void consume(MessageEvent message) {
-        logger.info("Received message: {}", message.toString());
+        logger.info("Received message: {}", new Gson().toJson(message));
         messageProcessor.processMessage(message);
     }
 }
