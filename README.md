@@ -9,7 +9,7 @@ The core functionality of the second microservice includes generating a hash fro
 ## Architecture Diagram
 
 <p align="center">
-<img src="Images/diagram.jpg" alt="Demo" width="70%"/>
+<img src="images/diagram.jpg" alt="Diagram" width="70%"/>
 </p>
 
 ## Technologies Used
